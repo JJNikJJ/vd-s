@@ -104,6 +104,7 @@ def RegisterUser(request):
         name=f"{mark} {model}",
         number=car_number
     )
+    car.save()
 
     user = CustomUser.objects.create(
         username=username,
