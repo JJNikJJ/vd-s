@@ -150,30 +150,20 @@ def LoginUser(request):
         return JsonResponse({'message': 'Error: invalid request method.'})
 
     data = json.loads(request.body)
-    user_tg = data.get('userTG')
-    user_number = data.get('userNumber')
-    token = data.get('token')
+    username = data.get('username')
 
-    if user_tg:
+    if username[0] == "@":
         user_field = 'telegram'
-        user_value = user_tg
-    elif user_number:
-        user_field = 'phone_number'
-        user_value = user_number
     else:
-        return JsonResponse({'message': 'Error: invalid request.'})
+        user_field = 'phone_number'
 
     try:
-        user = CustomUser.objects.get(**{user_field: user_value})
-        actualToken = Token.objects.get(user=user)
-        if str(actualToken) == str(token):
-            login(request, user)
-        else:
-            return JsonResponse({'message': f"Error: invalid credentials. Expected: {actualToken}, given: {token}"})
+        user = CustomUser.objects.get(**{user_field: username})
     except CustomUser.DoesNotExist:
         return JsonResponse({'message': 'Error: user not found.'})
 
-    return JsonResponse({'message': 'OK'})
+    token = Token.objects.get_or_create(user=user)
+    return JsonResponse(token)
 
 
 class EditUser(APIView):
