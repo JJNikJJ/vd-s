@@ -163,7 +163,7 @@ def LoginUser(request):
         return JsonResponse({'message': 'Error: user not found.'})
 
     token = Token.objects.get_or_create(user=user)
-    return JsonResponse({'token': token})
+    return JsonResponse({'token': str(token[0])})
 
 
 class EditUser(APIView):
