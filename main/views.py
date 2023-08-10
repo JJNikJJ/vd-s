@@ -9,6 +9,8 @@ from .models import *
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 
+from .util import get_random_string
+
 
 class AuthObtainToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -93,7 +95,6 @@ def RegisterUser(request):
 
     data = json.loads(request.body)
     username = data.get('userName')
-    password = data.get('password')
     user_number = data.get('userNumber')
     user_tg = data.get('userTG')
     mark = data.get('mark')
@@ -112,7 +113,7 @@ def RegisterUser(request):
         telegram=user_tg,
         phone_number=user_number
     )
-    user.set_password(password)
+    user.set_password(get_random_string(10))
     user.save()
 
     token = Token.objects.get_or_create(user=user)
