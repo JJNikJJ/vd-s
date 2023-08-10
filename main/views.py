@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth import authenticate, login
+from django.db import IntegrityError, DatabaseError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from django.http import JsonResponse
@@ -107,14 +108,18 @@ def RegisterUser(request):
     )
     car.save()
 
-    user = CustomUser.objects.create(
-        username=username,
-        car=car,
-        telegram=user_tg,
-        phone_number=user_number
-    )
-    user.set_password(get_random_string(10))
-    user.save()
+    try:
+        user = CustomUser.objects.create(
+            username=username,
+            car=car,
+            telegram=user_tg,
+            phone_number=user_number
+        )
+        user.set_password(get_random_string(10))
+        user.save()
+    except DatabaseError:
+        car.delete()
+        return JsonResponse({'message': 'Error: user already exists or data is invalid'})
 
     token = Token.objects.get_or_create(user=user)
     return JsonResponse({'token': str(token[0])})
