@@ -152,7 +152,7 @@ def LoginUser(request):
     data = json.loads(request.body)
     username = data.get('username')
 
-    if username[0] == "@":
+    if str(username)[0] == '@':
         user_field = 'telegram'
     else:
         user_field = 'phone_number'
