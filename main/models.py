@@ -74,15 +74,27 @@ class CustomUser(AbstractUser):
 class ServicePrice(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE, null=False, verbose_name="Услуга")
     address = models.ForeignKey(Address, on_delete=models.CASCADE, null=False, verbose_name="Адрес автомойки")
-    car_class = models.ForeignKey(CarClass, on_delete=models.CASCADE, null=False, verbose_name="Класс авто")
-    price = models.FloatField(validators=[MinValueValidator(0.0)], verbose_name="Стоимость услуги")
+    priceLink = models.ManyToManyField(CarClass, through='CarClassHasServicePrice', related_name='%(class)s_link')
 
     def __str__(self):
-        return f"({self.id}) Услуга \"{self.service.name}\" по адресу \"{self.address.address}\" для класса авто \"{self.car_class.name}\""
+        return f"({self.id}) Услуга \"{self.service.name}\" по адресу \"{self.address.address}\""
 
     class Meta:
         verbose_name = "Стоимость услуги"
         verbose_name_plural = "Стоимости услуг"
+
+
+class CarClassHasServicePrice(models.Model):
+    servicePrice = models.ForeignKey(ServicePrice, on_delete=models.CASCADE, null=False, verbose_name="Стоимость услуги")
+    carClass = models.ForeignKey(CarClass, on_delete=models.CASCADE, null=False, verbose_name="Класс автомобиля")
+    price = models.FloatField(validators=[MinValueValidator(0.0)], verbose_name="Стоимость услуги")
+
+    def __str__(self):
+        return f"({self.id}) Связь стоимости \"{self.servicePrice.service}\" \"{self.carClass}\""
+
+    class Meta:
+        verbose_name = "Стоимость по классу авто"
+        verbose_name_plural = "Стоимость по классу авто"
 
 
 class PaymentType(models.Model):

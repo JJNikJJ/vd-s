@@ -1,15 +1,13 @@
 import json
 
-from django.contrib.auth import authenticate, login
-from django.db import IntegrityError, DatabaseError
+from django.db import DatabaseError
+from django.http import JsonResponse
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from django.http import JsonResponse
-from .serializers import *
-from .models import *
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
 
+from .serializers import *
 from .util import get_random_string
 
 
@@ -84,11 +82,16 @@ class GetServicesForAddress(APIView):
 
         car_class = request.user.car.car_class
 
-        services = ServicePrice.objects.filter(address_id=address, car_class=car_class)
-        data = [{'title': service.service.name,
-                 'price': service.price,
-                 'id': service.id,
-                 'type': service.is_special} for service in services]
+        services = ServicePrice.objects.filter(address_id=address)
+        data = []
+        for service in services:
+            price = service.priceLink.filter(carClass=car_class)
+            if not price:
+                continue
+            data.append({'title': service.service.name,
+                         'price': price.price,
+                         'id': service.id,
+                         'type': service.is_special})
 
         return JsonResponse(data, safe=False)
 
