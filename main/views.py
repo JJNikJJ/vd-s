@@ -85,7 +85,10 @@ class GetServicesForAddress(APIView):
         car_class = request.user.car.car_class
 
         services = ServicePrice.objects.filter(address_id=address, car_class=car_class)
-        data = [{'title': service.service.name, 'price': service.price} for service in services]
+        data = [{'title': service.service.name,
+                 'price': service.price,
+                 'id': service.id,
+                 'type': service.is_special} for service in services]
 
         return JsonResponse(data, safe=False)
 
