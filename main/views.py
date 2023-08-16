@@ -168,11 +168,34 @@ def LoginUser(request):
         return JsonResponse({'message': 'Error: user not found.'})
 
     token = Token.objects.get_or_create(user=user)
-    return JsonResponse({'token': str(token[0])})
+    return JsonResponse({'message': 'OK', 'token': str(token[0])})
 
 
 class EditUser(APIView):
     permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        if not user:
+            return JsonResponse({'error': 'No user logged in'})
+
+        mark = ''
+        model = ''
+        number = ''
+        if user.car:
+            mark = user.car.name.split(' ')[0]
+            model = user.car.name.split(' ')[1]
+            number = user.car.number
+        data = {
+            "userName": user.username,
+            "userNumber": user.phone_number,
+            "userTG": user.telegram,
+            "mark": mark,
+            "model": model,
+            "carNumber": number,
+        }
+
+        return JsonResponse(data, safe=False)
 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
