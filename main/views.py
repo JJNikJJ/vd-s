@@ -132,8 +132,10 @@ def CreateCheckout(request):
     if request.method != 'POST':
         return JsonResponse({'message': 'Error: invalid request method.'})
 
+    if not request.user:
+        return JsonResponse({'message': 'Error: no user logged in method.'})
+
     data = json.loads(request.body)
-    user = data.get('userID')
     address = data.get('address')
     time = data.get('time')
     payment_type = data.get('paymentType')
@@ -142,7 +144,7 @@ def CreateCheckout(request):
     services = ServicePrice.objects.filter(id__in=services_list)
 
     checkout = Checkout.objects.create(
-        user=CustomUser.objects.get(id=user),
+        user=request.user,
         address=Address.objects.get(id=address),
         target_datetime=datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S'),
         payment_type=PaymentType.objects.get(id=payment_type),
@@ -180,7 +182,7 @@ class EditUser(APIView):
     def get(self, request):
         user = request.user
         if not user:
-            return JsonResponse({'error': 'No user logged in'})
+            return JsonResponse({'message': 'Error: No user logged in'})
 
         mark = ''
         model = ''
