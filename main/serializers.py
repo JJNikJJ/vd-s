@@ -6,7 +6,7 @@ from .models import *
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = ('id', 'address', 'time')
+        fields = ('id', 'address', 'time', 'latitude', 'longitude')
 
     time = serializers.SerializerMethodField()
 
@@ -48,7 +48,6 @@ class CheckoutSerializer(serializers.ModelSerializer):
     def get_servicesList(self, obj):
         class ServicePriceSerializer(serializers.ModelSerializer):
             title = serializers.CharField(source='service.name')
-            # id = serializers.IntegerField(source='service.id')
 
             class Meta:
                 model = ServicePrice

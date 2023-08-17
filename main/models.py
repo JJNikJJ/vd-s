@@ -17,7 +17,8 @@ class CarClass(models.Model):
 
 
 class Address(models.Model):
-    map_coordinates = models.CharField(max_length=100, null=False, verbose_name="Координаты на карте")
+    latitude = models.FloatField(null=False, default=0, verbose_name="Широта точки на карте")
+    longitude = models.FloatField(null=False, default=0, verbose_name="Долгота точки на карте")
     address = models.CharField(max_length=100, null=False, verbose_name="Адрес автомойки")
     work_time_start = models.TimeField(null=False, default=datetime.time(9, 0),
                                        verbose_name="Время начала работы автомойки")
@@ -46,12 +47,13 @@ class Service(models.Model):
 
 
 class Car(models.Model):
-    name = models.CharField(max_length=100, null=False, verbose_name="Марка и модель авто")
+    mark = models.CharField(max_length=100, null=False, verbose_name="Марка авто")
+    model = models.CharField(max_length=100, null=False, verbose_name="Модель авто")
     number = models.CharField(max_length=100, null=False, verbose_name="Номер авто")
     car_class = models.ForeignKey(CarClass, on_delete=models.SET_NULL, null=True, verbose_name="Класс авто")
 
     def __str__(self):
-        return f"({self.id}) {self.name} #{self.number}"
+        return f"({self.id}) {self.mark} {self.model} #{self.number}"
 
     class Meta:
         verbose_name = "Авто"

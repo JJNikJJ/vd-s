@@ -109,7 +109,8 @@ def RegisterUser(request):
     car_number = data.get('carNumber')
 
     car = Car.objects.create(
-        name=f"{mark} {model}",
+        mark=mark,
+        model=model,
         number=car_number
     )
     car.save()
@@ -190,10 +191,13 @@ class EditUser(APIView):
         mark = ''
         model = ''
         number = ''
+        completed = False
         if user.car:
-            mark = user.car.name.split(' ')[0]
-            model = user.car.name.split(' ')[1]
+            mark = user.car.mark
+            model = user.car.model
             number = user.car.number
+            if user.car.car_class:
+                completed = True
         data = {
             "userName": user.username,
             "userNumber": user.phone_number,
@@ -201,6 +205,7 @@ class EditUser(APIView):
             "mark": mark,
             "model": model,
             "carNumber": number,
+            "completed": completed
         }
 
         return JsonResponse(data, safe=False)
@@ -220,10 +225,11 @@ class EditUser(APIView):
         user.telegram = user_tg
         car = user.car
         if car:
-            car.name = f"{mark} {model}",
+            car.mark = mark
+            car.model = model
             car.number = car_number
         else:
-            car = Car.objects.create(name=f"{mark} {model}", number=car_number)
+            car = Car.objects.create(mark=mark, model=model, number=car_number)
             user.car = car
 
         car.save()
