@@ -47,8 +47,8 @@ class Service(models.Model):
 
 
 class Car(models.Model):
-    mark = models.CharField(max_length=100, null=False, verbose_name="Марка авто")
-    model = models.CharField(max_length=100, null=False, verbose_name="Модель авто")
+    mark = models.CharField(max_length=100, null=False, default='', verbose_name="Марка авто")
+    model = models.CharField(max_length=100, null=False, default='', verbose_name="Модель авто")
     number = models.CharField(max_length=100, null=False, verbose_name="Номер авто")
     car_class = models.ForeignKey(CarClass, on_delete=models.SET_NULL, null=True, verbose_name="Класс авто")
 
