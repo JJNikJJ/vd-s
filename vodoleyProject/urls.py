@@ -13,7 +13,7 @@ urlpatterns = [
     path('api/get-addresses-list/', AddressListView.as_view(), name='get-addresses-list'),
     path('api/get-services-for-address/', GetServicesForAddress.as_view(), name='get-services-for-address'),
     path('api/get-user-checkouts/', UserCheckoutsView.as_view(), name='get-user-checkouts'),
-    path('api/create-checkout/', CreateCheckout, name='create-checkout'),
+    path('api/create-checkout/', CreateCheckout.as_view(), name='create-checkout'),
     path('api/get-user-discounts/', UserDiscountsView.as_view(), name='get-user-discounts'),
     path('api/get-payment-methods/', PaymentTypeListView.as_view(), name='get-payment-methods'),
 ]

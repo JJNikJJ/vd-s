@@ -78,7 +78,7 @@ class GetServicesForAddress(APIView):
 
         user = request.user
         if not user.car or not user.car.car_class:
-            return JsonResponse({'message': 'Error: user has no car or car class is not set.'})
+            return JsonResponse({'message': 'Ошибка: отсутствуют данные об авто пользователя или класс авто не заполнен.'})
 
         car_class = request.user.car.car_class
 
@@ -87,7 +87,6 @@ class GetServicesForAddress(APIView):
         for service in services:
             price = CarClassHasServicePrice.objects\
                 .filter(carClass=car_class, servicePrice=service).first()
-            # service.priceLink.filter(carClass=car_class)
             if not price:
                 continue
             data.append({'title': service.service.name,
@@ -100,7 +99,7 @@ class GetServicesForAddress(APIView):
 
 def RegisterUser(request):
     if request.method != 'POST':
-        return JsonResponse({'message': 'Error: invalid request method.'})
+        return JsonResponse({'message': 'Ошибка: invalid request method.'})
 
     data = json.loads(request.body)
     username = data.get('userName')
@@ -128,42 +127,60 @@ def RegisterUser(request):
         user.save()
     except DatabaseError:
         car.delete()
-        return JsonResponse({'message': 'Error: user already exists or data is invalid'})
+        return JsonResponse({'message': 'Ошибка: user already exists or data is invalid'})
 
     token = Token.objects.get_or_create(user=user)
     return JsonResponse({'token': str(token[0])})
 
 
-def CreateCheckout(request):
-    if request.method != 'POST':
-        return JsonResponse({'message': 'Error: invalid request method.'})
 
-    if not request.user:
-        return JsonResponse({'message': 'Error: no user logged in method.'})
+class CreateCheckout(APIView):
+    permission_classes = (IsAuthenticated,)
 
-    data = json.loads(request.body)
-    address = data.get('address')
-    time = data.get('time')
-    payment_type = data.get('paymentType')
-    services_list = data.get('servicesList', [])
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        if not user.car or not user.car.car_class:
+            return JsonResponse({'message': 'Ошибка: отсутствуют данные об авто пользователя или класс авто не заполнен.'})
 
-    services = ServicePrice.objects.filter(id__in=services_list)
+        car_class = user.car.car_class
+        data = json.loads(request.body)
+        address = data.get('address')
+        time = data.get('time')
+        payment_type = data.get('paymentType')
+        services_list = data.get('servicesList', [])
 
-    checkout = Checkout.objects.create(
-        user=request.user,
-        address=Address.objects.get(id=address),
-        target_datetime=datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S'),
-        payment_type=PaymentType.objects.get(id=payment_type),
-        final_price=sum(service.price for service in services),
-    )
-    checkout.services_list.set(services)
+        services = ServicePrice.objects.filter(id__in=services_list)
+        price_sum = 0
+        approved = []
+        for service in services:
+            price = CarClassHasServicePrice.objects \
+                .filter(carClass=car_class, servicePrice=service).first()
+            if not price:
+                continue
+            price_sum += price.price
+            approved.append(service)
 
-    return JsonResponse({'message': 'OK'})
+        if len(approved) == 0:
+            return JsonResponse(
+                {'message': 'Ошибка: выбранных услуг не существует для текущего класса автомобиля пользователя.'})
+
+        checkout = Checkout.objects.create(
+            user=request.user,
+            address=Address.objects.get(id=address),
+            target_datetime=datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S'),
+            payment_type=PaymentType.objects.get(id=payment_type),
+            final_price=price_sum,
+        )
+        checkout.services_list.set(approved)
+        checkout.save()
+
+        return JsonResponse({'message': 'OK'})
+        # return JsonResponse(data={'message': 'OK', 'approved': list(map(lambda x: x.id, approved))}, safe=False)
 
 
 def LoginUser(request):
     if request.method != 'POST':
-        return JsonResponse({'message': 'Error: invalid request method.'})
+        return JsonResponse({'message': 'Ошибка: неправильный метод запроса.'})
 
     data = json.loads(request.body)
     username = data.get('username')
@@ -176,7 +193,7 @@ def LoginUser(request):
     try:
         user = CustomUser.objects.get(**{user_field: username})
     except CustomUser.DoesNotExist:
-        return JsonResponse({'message': 'Error: user not found.'})
+        return JsonResponse({'message': 'Ошибка: пользователя с введенными данными не существует.'})
 
     token = Token.objects.get_or_create(user=user)
     return JsonResponse({'message': 'OK', 'token': str(token[0])})
@@ -188,7 +205,7 @@ class EditUser(APIView):
     def get(self, request):
         user = request.user
         if not user:
-            return JsonResponse({'message': 'Error: No user logged in'})
+            return JsonResponse({'message': 'Ошибка: пользователь не найден данных сессии.'})
 
         mark = ''
         model = ''
