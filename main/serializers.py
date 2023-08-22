@@ -42,7 +42,7 @@ class CheckoutSerializer(serializers.ModelSerializer):
 
     def get_time(self, obj):
         locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
-        formatted_datetime = obj.target_datetime.strftime('%B %d, %H:%M').replace('.', '').replace(' 0', ' ')
+        formatted_datetime = obj.target_datetime.strftime('%d %B, %H:%M').replace('.', '').replace(' 0', ' ')
         return formatted_datetime
 
     def get_servicesList(self, obj):
