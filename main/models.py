@@ -92,7 +92,7 @@ class CarClassHasServicePrice(models.Model):
     price = models.FloatField(validators=[MinValueValidator(0.0)], verbose_name="Стоимость услуги")
 
     def __str__(self):
-        return f"({self.id}) Связь стоимости \"{self.servicePrice.service}\" \"{self.carClass}\""
+        return f"({self.id}) Услуга \"{self.servicePrice.service}\" для \"{self.carClass}\""
 
     class Meta:
         verbose_name = "Стоимость по классу авто"
@@ -113,14 +113,14 @@ class PaymentType(models.Model):
 class Checkout(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, verbose_name="Заказчик услуг")
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, verbose_name="Адрес заказанных услуг")
-    services_list = models.ManyToManyField(ServicePrice, verbose_name="Заказанные услуги")
+    services_list = models.ManyToManyField(CarClassHasServicePrice, verbose_name="Заказанные услуги")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания заказа")
     target_datetime = models.DateTimeField(null=True, default=None,
                                            verbose_name="Время, на которое была назначена запись")
     status = models.BooleanField(default=False, verbose_name="Заказ был завершен")
     postponed = models.BooleanField(default=False, verbose_name="Заказ был отложен")
     final_price = models.FloatField(validators=[MinValueValidator(0.0)], verbose_name="Полная стоимость заказа")
-    user_review = models.CharField(max_length=200, null=True, verbose_name="Отзыв заказчика")
+    user_review = models.CharField(max_length=200, null=True, blank=True, default="", verbose_name="Отзыв клиента")
     payment_type = models.ForeignKey(PaymentType, null=True, on_delete=models.SET_NULL, verbose_name="Способ оплаты")
 
     def __str__(self):

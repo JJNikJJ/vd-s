@@ -42,16 +42,17 @@ class CheckoutSerializer(serializers.ModelSerializer):
 
     def get_time(self, obj):
         locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
-        formatted_datetime = obj.target_datetime.strftime('%d %B, %H:%M').replace('.', '').replace(' 0', ' ')
+        formatted_datetime = obj.target_datetime.strftime('%B %d, %H:%M').replace('.', '').replace(' 0', ' ')
         return formatted_datetime
 
     def get_servicesList(self, obj):
-        class ServicePriceSerializer(serializers.ModelSerializer):
-            title = serializers.CharField(source='service.name')
-
+        class CarClassHasServicePriceSerializer(serializers.ModelSerializer):
             class Meta:
-                model = ServicePrice
+                model = CarClassHasServicePrice
                 fields = ('id', 'title', 'price')
 
+            title = serializers.CharField(source='servicePrice.service.name')
+            id = serializers.IntegerField(source='servicePrice.service.id')
+
         service_prices = obj.services_list.all()
-        return ServicePriceSerializer(service_prices, many=True).data
+        return CarClassHasServicePriceSerializer(service_prices, many=True).data

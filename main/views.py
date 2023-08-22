@@ -145,13 +145,14 @@ class CreateCheckout(APIView):
         car_class = user.car.car_class
         data = json.loads(request.body)
         address = data.get('address')
-        time = data.get('time')
+        time = data.get('time') # 2023-08-16 18:08:20
         payment_type = data.get('paymentType')
         services_list = data.get('servicesList', [])
 
         services = ServicePrice.objects.filter(id__in=services_list)
         price_sum = 0
         approved = []
+        finalServices = []
         for service in services:
             price = CarClassHasServicePrice.objects \
                 .filter(carClass=car_class, servicePrice=service).first()
@@ -159,6 +160,7 @@ class CreateCheckout(APIView):
                 continue
             price_sum += price.price
             approved.append(service)
+            finalServices.append(price)
 
         if len(approved) == 0:
             return JsonResponse(
@@ -171,11 +173,19 @@ class CreateCheckout(APIView):
             payment_type=PaymentType.objects.get(id=payment_type),
             final_price=price_sum,
         )
-        checkout.services_list.set(approved)
-        checkout.save()
 
-        return JsonResponse({'message': 'OK'})
-        # return JsonResponse(data={'message': 'OK', 'approved': list(map(lambda x: x.id, approved))}, safe=False)
+        try:
+            checkout.services_list.set(list(map(lambda x: x.id, finalServices)))
+            checkout.save()
+        except DatabaseError as e:
+            checkout.delete()
+            return JsonResponse(
+                {'message': f'Ошибка: {str(e)}'})
+
+        # return JsonResponse({'message': 'OK'})
+        return JsonResponse(data={'message': 'OK',
+                                  'approved': list(map(lambda x: x.id, approved)),
+                                  'finalServices': list(map(lambda x: x.id, finalServices))}, safe=False)
 
 
 def LoginUser(request):
