@@ -34,9 +34,10 @@ class UserDiscountsSerializer(serializers.ModelSerializer):
 class CheckoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Checkout
-        fields = ('id', 'address', 'time', 'servicesList')
+        fields = ('id', 'address', 'time', 'paymentMethod', 'status', 'servicesList')
 
     address = serializers.CharField(source='address.address')
+    paymentMethod = serializers.CharField(source='payment_type.name')
     servicesList = serializers.SerializerMethodField()
     time = serializers.SerializerMethodField()
 

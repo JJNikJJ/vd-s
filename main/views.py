@@ -133,7 +133,6 @@ def RegisterUser(request):
     return JsonResponse({'token': str(token[0])})
 
 
-
 class CreateCheckout(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -186,6 +185,23 @@ class CreateCheckout(APIView):
         return JsonResponse(data={'message': 'OK',
                                   'approved': list(map(lambda x: x.id, approved)),
                                   'finalServices': list(map(lambda x: x.id, finalServices))}, safe=False)
+
+
+class PostponeCheckout(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        checkout_id = data.get('id')
+
+        try:
+            checkout = Checkout.objects.get(id=checkout_id)
+            checkout.postponed = True
+            checkout.save()
+        except DatabaseError as e:
+            return JsonResponse({'message': f'Ошибка: {str(e)}'})
+
+        return JsonResponse({'message': 'OK'})
 
 
 def LoginUser(request):
