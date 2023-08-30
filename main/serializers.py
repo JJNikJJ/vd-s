@@ -17,7 +17,7 @@ class AddressSerializer(serializers.ModelSerializer):
 class PaymentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentType
-        fields = ('id', 'title')
+        fields = ('id', 'title', 'discount')
 
     title = serializers.CharField(source='name')
 
@@ -34,12 +34,16 @@ class UserDiscountsSerializer(serializers.ModelSerializer):
 class CheckoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Checkout
-        fields = ('id', 'address', 'time', 'paymentMethod', 'status', 'servicesList')
+        fields = ('id', 'address', 'time', 'paymentMethod', 'status', 'postponed', 'servicesList')
 
+    status = serializers.SerializerMethodField()
     address = serializers.CharField(source='address.address')
     paymentMethod = serializers.CharField(source='payment_type.name')
     servicesList = serializers.SerializerMethodField()
     time = serializers.SerializerMethodField()
+
+    def get_status(self, obj):
+        return obj.status or obj.is_past_due
 
     def get_time(self, obj):
         locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')

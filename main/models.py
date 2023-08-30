@@ -1,8 +1,9 @@
 import datetime
 
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models import ObjectDoesNotExist
 
 
 class CarClass(models.Model):
@@ -101,6 +102,12 @@ class CarClassHasServicePrice(models.Model):
 
 class PaymentType(models.Model):
     name = models.CharField(default="", max_length=100, null=False, verbose_name="Наименование")
+    discount = models.FloatField(default=0.0,
+                                 verbose_name="Скидка при этом способе оплаты",
+                                 validators=[
+                                     MaxValueValidator(1),
+                                     MinValueValidator(0)
+                                 ])
 
     def __str__(self):
         return f"({self.id}) {self.name}"
@@ -122,6 +129,29 @@ class Checkout(models.Model):
     final_price = models.FloatField(validators=[MinValueValidator(0.0)], verbose_name="Полная стоимость заказа")
     user_review = models.CharField(max_length=200, null=True, blank=True, default="", verbose_name="Отзыв клиента")
     payment_type = models.ForeignKey(PaymentType, null=True, on_delete=models.SET_NULL, verbose_name="Способ оплаты")
+    bonuses_received = models.BooleanField(default=False,
+                                           verbose_name="Бонусы по пограмме лояльности были начислены (автоматическое поле)")
+
+    def save(self, *args, **kwargs):
+        if self.status and not self.bonuses_received:
+            for service_price in self.services_list.all():
+                service = service_price.servicePrice.service
+                if service.has_loyalty:
+                    try:
+                        loyal = ServiceUserLoyalty.objects.get(user=self.user, service=service)
+                        loyal.loyalty_count += 1
+                        if loyal.loyalty_count > 3:
+                            loyal.loyalty_count = 0
+                    except ServiceUserLoyalty.DoesNotExist:
+                        loyal = ServiceUserLoyalty.objects.create(user=self.user, service=service, loyalty_count=1)
+                    loyal.save()
+            self.bonuses_received = True
+
+        super(Checkout, self).save(*args, **kwargs)
+
+    @property
+    def is_past_due(self):
+        return datetime.date.today() > self.target_datetime.date()
 
     def __str__(self):
         return f"({self.id}) Заказ от \"{self.user.username}\" на дату \"{self.target_datetime.date()}\""

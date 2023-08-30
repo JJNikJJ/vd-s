@@ -1,5 +1,5 @@
 import json
-
+from datetime import datetime, timedelta
 from django.db import DatabaseError
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
@@ -40,7 +40,9 @@ class UserDiscountsView(APIView):
     def get(self, request):
         user = request.user
         loyalty_data = ServiceUserLoyalty.objects.filter(user=user)
-        loyalty_data = loyalty_data.filter(service__in=Service.objects.filter(has_loyalty=True))
+        loyalty_data = loyalty_data\
+            .filter(service__in=Service.objects.filter(has_loyalty=True))\
+            .exclude(loyalty_count=0)
         serializer = UserDiscountsSerializer(loyalty_data, many=True)
         return JsonResponse(serializer.data, safe=False)
 
@@ -147,6 +149,7 @@ class CreateCheckout(APIView):
         time = data.get('time') # 2023-08-16 18:08:20
         payment_type = data.get('paymentType')
         services_list = data.get('servicesList', [])
+        discount = data.get('discount')
 
         services = ServicePrice.objects.filter(id__in=services_list)
         price_sum = 0
@@ -157,13 +160,31 @@ class CreateCheckout(APIView):
                 .filter(carClass=car_class, servicePrice=service).first()
             if not price:
                 continue
-            price_sum += price.price
+
+            service_price = price.price
+
+            if discount:
+                try:
+                    loyal = ServiceUserLoyalty.objects.get(id=discount, service=service.service).loyalty_count
+                    service_price -= service_price * loyal * 0.05
+                except ServiceUserLoyalty.DoesNotExist:
+                    pass
+
+            price_sum += service_price
             approved.append(service)
             finalServices.append(price)
 
         if len(approved) == 0:
             return JsonResponse(
                 {'message': 'Ошибка: выбранных услуг не существует для текущего класса автомобиля пользователя.'})
+
+        if payment_type:
+            try:
+                payment = PaymentType.objects.get(id=payment_type)
+                if payment.discount > 0:
+                    price_sum -= price_sum * payment.discount
+            except PaymentType.DoesNotExist:
+                pass
 
         checkout = Checkout.objects.create(
             user=request.user,
@@ -196,6 +217,9 @@ class PostponeCheckout(APIView):
 
         try:
             checkout = Checkout.objects.get(id=checkout_id)
+            if not checkout.postponed:
+                date = checkout.target_datetime + timedelta(minutes=15)
+                checkout.target_datetime = date
             checkout.postponed = True
             checkout.save()
         except DatabaseError as e:
