@@ -11,7 +11,9 @@ from telegram.ext import (
 def main() -> None:
     application = Application.builder().token(TOKEN).build()
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", welcome), CommandHandler("signup", signup)],
+        entry_points=[CommandHandler("start", welcome),
+                      CommandHandler("signup", signup),
+                      CommandHandler("openwebapp", openwebapp)],
         states={
             START_ROUTES: [
                 CallbackQueryHandler(register, pattern="^" + str(REGISTER) + "$"),
@@ -23,12 +25,10 @@ def main() -> None:
                 CallbackQueryHandler(service_action_tip, pattern="^" + str(SERVICE_ACTION_TIP) + "$"),
                 CallbackQueryHandler(service_action_bonuses, pattern="^" + str(SERVICE_ACTION_BONUSES) + "$"),
             ],
-            # END_ROUTES: [
-            #     CallbackQueryHandler(end, pattern="^" + str(REGISTER) + "$"),
-            #     CallbackQueryHandler(end, pattern="^" + str(LOGIN) + "$"),
-            # ],
         },
-        fallbacks=[CommandHandler("start", welcome)],
+        fallbacks=[CommandHandler("start", welcome),
+                   CommandHandler("signup", signup),
+                   CommandHandler("openwebapp", openwebapp)],
     )
 
     application.add_handler(conv_handler)

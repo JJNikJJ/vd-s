@@ -3,7 +3,6 @@ import datetime
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models import ObjectDoesNotExist
 
 
 class CarClass(models.Model):
@@ -125,6 +124,7 @@ class Checkout(models.Model):
     target_datetime = models.DateTimeField(null=True, default=None,
                                            verbose_name="Время, на которое была назначена запись")
     status = models.BooleanField(default=False, verbose_name="Заказ был завершен")
+    canceled = models.BooleanField(default=False, verbose_name="Заказ был отменен")
     postponed = models.BooleanField(default=False, verbose_name="Заказ был отложен")
     final_price = models.FloatField(validators=[MinValueValidator(0.0)], verbose_name="Полная стоимость заказа")
     user_review = models.CharField(max_length=200, null=True, blank=True, default="", verbose_name="Отзыв клиента")
@@ -133,7 +133,7 @@ class Checkout(models.Model):
                                            verbose_name="Бонусы по пограмме лояльности были начислены (автоматическое поле)")
 
     def save(self, *args, **kwargs):
-        if self.status and not self.bonuses_received:
+        if self.status and not self.bonuses_received and not self.canceled:
             for service_price in self.services_list.all():
                 service = service_price.servicePrice.service
                 if service.has_loyalty:
