@@ -1,8 +1,33 @@
 import datetime
+import requests
 
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from vodoleyProjectBot.config import TOKEN
+
+
+def SendMessage(user, message):
+    try:
+        chat = UserChat.objects.get(telegram=user.telegram).chat
+        send_text = 'https://api.telegram.org/bot' + TOKEN +\
+                    '/sendMessage?chat_id=' + chat + '&parse_mode=Markdown&text='\
+                    + message
+        requests.get(send_text)
+    except UserChat.DoesNotExist:
+        return
+
+
+class UserChat(models.Model):
+    telegram = models.CharField(null=False, max_length=255, verbose_name="Никнейм тг", editable=False)
+    chat = models.CharField(null=False, max_length=255, verbose_name="Айди чата", editable=False)
+
+    def __str__(self):
+        return f"({self.id}) @{self.telegram} #{self.chat}"
+
+    class Meta:
+        verbose_name = "Чат"
+        verbose_name_plural = "Чаты"
 
 
 class CarClass(models.Model):
@@ -64,9 +89,29 @@ class CustomUser(AbstractUser):
     car = models.ForeignKey(Car, on_delete=models.SET_NULL, null=True, verbose_name="Авто")
     telegram = models.CharField(max_length=100, null=True, verbose_name="Телеграм никнейм")
     phone_number = models.CharField(max_length=20, null=True, verbose_name="Номер телефона")
+    is_registration_complete = models.BooleanField(default=False, editable=False,
+                                                   verbose_name="Регистрация подтверждена")
+
+    bot_welcome_message_sent = models.BooleanField(default=False)
+    bot_registration_complete_message_sent = models.BooleanField(default=False)
 
     def __str__(self):
         return f"({self.id}) {self.username}"
+
+    def save(self, *args, **kwargs):
+        self.is_registration_complete = bool(self.car and self.car.car_class)
+
+        # Сообщение о том что регистрация будет подтверждена
+        if not self.bot_welcome_message_sent:
+            SendMessage(self, "Отлично! Спасибо, что присоединились к нашему сервису. В течение 24 часов мы подтвердим вашу регистрацию, после чего вы получите полный доступ к сервису")
+            self.bot_welcome_message_sent = True
+
+        # Сообщение о том что регистрация подтверждена
+        if not self.bot_registration_complete_message_sent\
+                and self.is_registration_complete:
+            self.bot_registration_complete_message_sent = True
+            SendMessage(self, "Регистрация подтверждена! Запишитесь на мойку прямо сейчас")
+        super(CustomUser, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Пользователь"
@@ -130,7 +175,8 @@ class Checkout(models.Model):
     user_review = models.CharField(max_length=200, null=True, blank=True, default="", verbose_name="Отзыв клиента")
     payment_type = models.ForeignKey(PaymentType, null=True, on_delete=models.SET_NULL, verbose_name="Способ оплаты")
     bonuses_received = models.BooleanField(default=False,
-                                           verbose_name="Бонусы по пограмме лояльности были начислены (автоматическое поле)")
+                                           verbose_name="Бонусы по пограмме лояльности были начислены",
+                                           editable=False)
 
     def save(self, *args, **kwargs):
         if self.status and not self.bonuses_received and not self.canceled:

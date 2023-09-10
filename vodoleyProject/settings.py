@@ -39,13 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
-    'rest_framework.authtoken'
+    'vodoleyProject.apps.MainConfig',
+    'vodoleyProjectBot.apps.MainConfig',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'main.csrf_disable.DisableCSRFMiddleware',
-
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

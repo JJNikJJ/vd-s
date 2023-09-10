@@ -5,6 +5,7 @@ import django
 django.setup()
 from rest_framework.authtoken.models import Token
 from main.models import CustomUser
+from main.models import UserChat
 from main.models import Checkout
 from datetime import timedelta
 
@@ -48,4 +49,17 @@ def PostponeOrder(checkout):
 def CancelOrder(checkout):
     checkout.canceled = True
     checkout.save()
-    return False
+
+
+def UpdateChatData(username, chatid):
+    try:
+        chat = UserChat.objects.get(telegram=username)
+        chat.chat = chatid
+        chat.save()
+    except UserChat.DoesNotExist:
+        try:
+            chat = UserChat.objects.get(chat=chatid)
+            chat.user = username
+            chat.save()
+        except UserChat.DoesNotExist:
+            UserChat.objects.create(telegram=username, chat=chatid)

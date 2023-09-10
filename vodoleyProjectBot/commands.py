@@ -1,10 +1,9 @@
 import logging
 import telegram
-import message_loader
-from datetime import datetime
+from vodoleyProjectBot import message_loader
+from vodoleyProjectBot.functions import *
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, WebAppInfo
 from telegram.ext import (ContextTypes, ConversationHandler)
-from functions import *
 from django.utils import timezone
 
 
@@ -17,6 +16,7 @@ messages = message_loader.get_messages()
 
 
 async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    UpdateChatData(update.message.chat.username, update.message.chat.id)
     keyboard = [
         [InlineKeyboardButton("Зарегистрироваться", callback_data=str(REGISTER))],
         [InlineKeyboardButton("Войти", callback_data=str(LOGIN))]
@@ -27,6 +27,7 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def openwebapp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    UpdateChatData(update.message.chat.username, update.message.chat.id)
     keyboard = [
         [InlineKeyboardButton("Перейти в приложение",
                               web_app=WebAppInfo(url="https://vodoley.terexov.ru/#/auth"))]
@@ -38,6 +39,7 @@ async def openwebapp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def register(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
+    UpdateChatData(query.message.chat.username, query.message.chat.id)
     username = query.message.chat.username
     await query.answer()
     keyboard = []
@@ -68,6 +70,7 @@ async def register(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def login(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
     username = query.message.chat.username
     await query.answer()
@@ -107,6 +110,7 @@ async def login(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def signup(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    UpdateChatData(update.message.chat.username, update.message.chat.id)
     username = update.message.chat.username
     userExists = GetUser(username)
     keyboard = []
@@ -141,7 +145,7 @@ async def signup(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             return START_ROUTES
         else:
             keyboard.append([InlineKeyboardButton("Записаться",
-                                                  web_app=WebAppInfo(url=f"https://vodoley.terexov.ru/#/makeorder?token={token}"))])
+                                                  web_app=WebAppInfo(url=f"https://vodoley.terexov.ru/#/makeorder?token={token[0]}"))])
             reply_markup = InlineKeyboardMarkup(keyboard)
             # Записаться на мойку можно в нашем приложении
             await context.bot.send_message(chat_id=update.effective_user.id,
@@ -160,6 +164,7 @@ async def signup(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def service_action_coming(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
     await query.answer()
     await context.bot.send_message(chat_id=update.effective_user.id, text=messages['see_you_soon'])
@@ -178,6 +183,7 @@ async def service_action_coming(update: Update, context: ContextTypes.DEFAULT_TY
 
 
 async def service_action_tip(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
     await query.answer()
     await context.bot.send_message(chat_id=update.effective_user.id, text="Спасибо за чаевые! Ждем вас снова!")
@@ -185,6 +191,7 @@ async def service_action_tip(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def service_action_bonuses(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
     await query.answer()
     await context.bot.send_message(chat_id=update.effective_user.id, text="У вас пока нет бонусов")
@@ -192,6 +199,7 @@ async def service_action_bonuses(update: Update, context: ContextTypes.DEFAULT_T
 
 
 async def service_action_late(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
     await query.answer()
     user = GetUser(query.message.chat.username)
@@ -209,6 +217,7 @@ async def service_action_late(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 async def service_action_postpone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
     user = GetUser(query.message.chat.username)
     await query.answer()
@@ -225,6 +234,7 @@ async def service_action_postpone(update: Update, context: ContextTypes.DEFAULT_
 
 
 async def service_action_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
     user = GetUser(query.message.chat.username)
     await query.answer()

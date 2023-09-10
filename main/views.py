@@ -255,7 +255,7 @@ class EditUser(APIView):
     def get(self, request):
         user = request.user
         if not user:
-            return JsonResponse({'message': 'Ошибка: пользователь не найден данных сессии.'})
+            return JsonResponse({'message': 'Ошибка: пользователь не найден в данных сессии.'})
 
         mark = ''
         model = ''

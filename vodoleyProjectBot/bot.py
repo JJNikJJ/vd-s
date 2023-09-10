@@ -1,5 +1,5 @@
-from config import TOKEN
-from commands import *
+from vodoleyProjectBot.config import TOKEN
+from vodoleyProjectBot.commands import *
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
@@ -9,7 +9,7 @@ from telegram.ext import (
 
 
 def main() -> None:
-    application = Application.builder().token(TOKEN).build()
+    APPLICATION = Application.builder().token(TOKEN).build()
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", welcome),
                       CommandHandler("signup", signup),
@@ -31,8 +31,8 @@ def main() -> None:
                    CommandHandler("openwebapp", openwebapp)],
     )
 
-    application.add_handler(conv_handler)
-    application.run_polling()
+    APPLICATION.add_handler(conv_handler)
+    APPLICATION.run_polling()
 
 
 if __name__ == "__main__":
