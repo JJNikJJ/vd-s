@@ -164,43 +164,33 @@ async def signup(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def service_action_coming(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
+    UpdateChatData(query.message.chat.username, query.message.chat.id)
     await query.answer()
     await context.bot.send_message(chat_id=update.effective_user.id, text=messages['see_you_soon'])
-    # await context.bot.send_message(chat_id=update.effective_user.id, text=messages['service_started'])
-    # await context.bot.send_message(chat_id=update.effective_user.id, text=messages['service_will_end_soon'])
-    # keyboard = [
-    #     [InlineKeyboardButton("Оставить чаевые", callback_data=str(SERVICE_ACTION_TIP))],
-    #     [InlineKeyboardButton("Посмотреть мои скидки", callback_data=str(SERVICE_ACTION_BONUSES))]
-    # ]
-    # reply_markup = InlineKeyboardMarkup(keyboard)
-    # await context.bot.send_message(
-    #     chat_id=update.effective_user.id,
-    #     text=messages['service_complete'],
-    #     reply_markup=reply_markup)
     return START_ROUTES
 
 
 async def service_action_tip(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
+    UpdateChatData(query.message.chat.username, query.message.chat.id)
     await query.answer()
     await context.bot.send_message(chat_id=update.effective_user.id, text="Спасибо за чаевые! Ждем вас снова!")
     return ConversationHandler.END
 
 
 async def service_action_bonuses(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
+    UpdateChatData(query.message.chat.username, query.message.chat.id)
     await query.answer()
     await context.bot.send_message(chat_id=update.effective_user.id, text="У вас пока нет бонусов")
     return ConversationHandler.END
 
 
+# Опоздаю
 async def service_action_late(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
+    UpdateChatData(query.message.chat.username, query.message.chat.id)
     await query.answer()
     user = GetUser(query.message.chat.username)
     if user:
@@ -216,9 +206,10 @@ async def service_action_late(update: Update, context: ContextTypes.DEFAULT_TYPE
     return ConversationHandler.END
 
 
+# Перенести (изменить)
 async def service_action_postpone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
+    UpdateChatData(query.message.chat.username, query.message.chat.id)
     user = GetUser(query.message.chat.username)
     await query.answer()
 
@@ -233,9 +224,10 @@ async def service_action_postpone(update: Update, context: ContextTypes.DEFAULT_
     return ConversationHandler.END
 
 
+# Отменить
 async def service_action_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
+    UpdateChatData(query.message.chat.username, query.message.chat.id)
     user = GetUser(query.message.chat.username)
     await query.answer()
     if user:
