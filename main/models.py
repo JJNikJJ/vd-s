@@ -1,5 +1,5 @@
 import datetime
-# import requests
+import requests
 
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -8,8 +8,6 @@ from vodoleyProjectBot.config import TOKEN
 
 
 def SendMessage(user, message):
-    return
-
     try:
         chat = UserChat.objects.get(telegram=user.telegram).chat
         send_text = 'https://api.telegram.org/bot' + TOKEN +\

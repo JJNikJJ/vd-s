@@ -25,9 +25,9 @@ SECRET_KEY = 'django-insecure-b92*-(dp&6lu&#ppm@5uj%rk(912_t_6=^f-5qqyt6noo^e1tm
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CSRF_TRUSTED_ORIGINS = ['moz-extension://e1498c3e-21f2-4246-975d-c0a7bebd26b6']
+CSRF_TRUSTED_ORIGINS = ['*']
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
