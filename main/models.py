@@ -8,6 +8,8 @@ from vodoleyProjectBot.config import TOKEN
 
 
 def SendMessage(user, message):
+    return
+
     try:
         chat = UserChat.objects.get(telegram=user.telegram).chat
         send_text = 'https://api.telegram.org/bot' + TOKEN +\
