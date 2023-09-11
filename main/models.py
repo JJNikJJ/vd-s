@@ -1,9 +1,12 @@
 import datetime
 import requests
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+
 from vodoleyProjectBot.config import TOKEN
 
 
@@ -14,8 +17,11 @@ def SendMessage(user, message):
                     '/sendMessage?chat_id=' + chat + '&parse_mode=Markdown&text='\
                     + message
         requests.get(send_text)
-    except UserChat.DoesNotExist:
-        return
+        print(f'Message sent to {chat}')
+        return True
+    except UserChat.DoesNotExist or requests.exceptions.RequestException as e:
+        print(f"Cannot send message: {str(e)}")
+        return False
 
 
 class UserChat(models.Model):
@@ -86,6 +92,7 @@ class Car(models.Model):
 
 
 class CustomUser(AbstractUser):
+    username = models.CharField(max_length=150, unique=True, verbose_name="ФИО")
     car = models.ForeignKey(Car, on_delete=models.SET_NULL, null=True, verbose_name="Авто")
     telegram = models.CharField(max_length=100, null=True, verbose_name="Телеграм никнейм")
     phone_number = models.CharField(max_length=20, null=True, verbose_name="Номер телефона")
@@ -103,14 +110,14 @@ class CustomUser(AbstractUser):
 
         # Сообщение о том что регистрация будет подтверждена
         if not self.bot_welcome_message_sent:
-            SendMessage(self, "Отлично! Спасибо, что присоединились к нашему сервису. В течение 24 часов мы подтвердим вашу регистрацию, после чего вы получите полный доступ к сервису")
-            self.bot_welcome_message_sent = True
+            sent = SendMessage(self, "Отлично! Спасибо, что присоединились к нашему сервису. В течение 24 часов мы подтвердим вашу регистрацию, после чего вы получите полный доступ к сервису")
+            self.bot_welcome_message_sent = sent
 
         # Сообщение о том что регистрация подтверждена
         if not self.bot_registration_complete_message_sent\
                 and self.is_registration_complete:
-            self.bot_registration_complete_message_sent = True
-            SendMessage(self, "Регистрация подтверждена! Запишитесь на мойку прямо сейчас")
+            sent = SendMessage(self, "Регистрация подтверждена! Запишитесь на мойку прямо сейчас")
+            self.bot_registration_complete_message_sent = sent
         super(CustomUser, self).save(*args, **kwargs)
 
     class Meta:

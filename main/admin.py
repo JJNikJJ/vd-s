@@ -15,7 +15,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     readonly_fields = ['is_registration_complete',
                        # 'bot_registration_complete_message_sent',
                        # 'bot_welcome_message_sent'
-    ]
+                       ]
 
     def is_registration_complete(self, obj):
         return "Да" if obj.is_registration_complete else "Нет"
@@ -45,6 +45,7 @@ admin.site.register(Checkout, CheckoutAdmin)
 
 class UserChatAdmin(admin.ModelAdmin):
     readonly_fields = ['telegram', 'chat']
+
 
 admin.site.register(UserChat, UserChatAdmin)
 
