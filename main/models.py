@@ -208,7 +208,7 @@ class Checkout(models.Model):
 
     def __str__(self):
         username = "<???>" if not self.user else self.user.username
-        return f"({self.id}) Заказ от \"{username}\" на дату \"{self.target_datetime.date()}\""
+        return f"({self.id}) Заказ от {username}"
 
     class Meta:
         verbose_name = "Заказ услуги"

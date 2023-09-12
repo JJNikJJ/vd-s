@@ -10,7 +10,7 @@ admin.site.register(PaymentType)
 
 
 class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'is_registration_complete']
+    list_display = ['__str__', 'telegram', 'is_registration_complete']
     list_filter = ['is_registration_complete']
     readonly_fields = ['is_registration_complete',
                        # 'bot_registration_complete_message_sent',

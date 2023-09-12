@@ -52,6 +52,8 @@ def CancelOrder(checkout):
 
 
 def UpdateChatData(username, chatid):
+
+    username = f"@{username}"
     try:
         chat = UserChat.objects.get(telegram=username)
         chat.chat = chatid
