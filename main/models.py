@@ -166,16 +166,20 @@ class PaymentType(models.Model):
 
 
 class Checkout(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False, verbose_name="Заказчик услуг")
-    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, verbose_name="Адрес заказанных услуг")
-    services_list = models.ManyToManyField(CarClassHasServicePrice, verbose_name="Заказанные услуги")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания заказа")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False, verbose_name="Клиент")
+    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, verbose_name="Адрес")
+    services_list = models.ManyToManyField(CarClassHasServicePrice, verbose_name="Услуги")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     target_datetime = models.DateTimeField(null=True, default=None,
-                                           verbose_name="Время, на которое была назначена запись")
-    status = models.BooleanField(default=False, verbose_name="Заказ был завершен")
-    canceled = models.BooleanField(default=False, verbose_name="Заказ был отменен")
-    postponed = models.BooleanField(default=False, verbose_name="Заказ был отложен")
-    final_price = models.FloatField(validators=[MinValueValidator(0.0)], verbose_name="Полная стоимость заказа")
+                                           verbose_name="Время записи")
+    status = models.BooleanField(default=False, verbose_name="Завершен")
+    canceled = models.BooleanField(default=False, verbose_name="Отменен клиентом",
+                                   # editable=False
+                                   )
+    postponed = models.BooleanField(default=False, verbose_name="Клиент опаздывает",
+                                    # editable=False
+                                    )
+    final_price = models.FloatField(validators=[MinValueValidator(0.0)], verbose_name="Стоимость заказа")
     user_review = models.CharField(max_length=200, null=True, blank=True, default="", verbose_name="Отзыв клиента")
     payment_type = models.ForeignKey(PaymentType, null=True, on_delete=models.SET_NULL, verbose_name="Способ оплаты")
     bonuses_received = models.BooleanField(default=False,

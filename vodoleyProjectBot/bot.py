@@ -16,7 +16,7 @@ def main() -> None:
                       CommandHandler("openwebapp", openwebapp)],
         states={
             START_ROUTES: [
-                CallbackQueryHandler(register, pattern="^" + str(REGISTER) + "$"),
+                # CallbackQueryHandler(register, pattern="^" + str(REGISTER) + "$"),
                 CallbackQueryHandler(login, pattern="^" + str(LOGIN) + "$"),
                 CallbackQueryHandler(service_action_coming, pattern="^" + str(SERVICE_ACTION_COMING) + "$"),
                 CallbackQueryHandler(service_action_late, pattern="^" + str(SERVICE_ACTION_LATE) + "$"),

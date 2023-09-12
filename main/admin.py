@@ -25,7 +25,10 @@ admin.site.register(CustomUser, CustomUserAdmin)
 
 class CheckoutAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'target_datetime', 'checkout_status']
-    readonly_fields = ['bonuses_received']
+    # TODO: readonly fields
+    readonly_fields = ['bonuses_received',
+                       # 'canceled', 'postponed'
+                       ]
     list_filter = ['status']
 
     def checkout_status(self, obj):
