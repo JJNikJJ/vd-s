@@ -25,8 +25,10 @@ class CustomUserAdmin(admin.ModelAdmin):
 admin.site.register(CustomUser, CustomUserAdmin)
 
 
+@admin.register(Checkout)
 class CheckoutAdmin(admin.ModelAdmin):
-    form = CheckoutAdminForm
+    # form = CheckoutAdminForm
+    change_form_template = "admin/main/checkout/change_form.html"
     list_display = ['__str__', 'target_datetime', 'checkout_status']
     # TODO: readonly fields
     readonly_fields = ['bonuses_received',
@@ -46,16 +48,16 @@ class CheckoutAdmin(admin.ModelAdmin):
 
     checkout_status.short_description = "Статус"
 
-    def change_view(self, request, object_id, form_url='', extra_context=None):
-        if "_close_checkout" in request.POST:
+    def response_change(self, request, obj):
+        if "_close-checkout" in request.POST:
             self.form.close_checkout_action()
             self.message_user(request, "Заказ закрыт")
-            return HttpResponseRedirect(request.path)
+            return HttpResponseRedirect(".")
 
-        return super().changeform_view(request, object_id, form_url, extra_context)
+        return super().response_change(request, obj)
 
 
-admin.site.register(Checkout, CheckoutAdmin)
+# admin.site.register(Checkout, CheckoutAdmin)
 
 
 class UserChatAdmin(admin.ModelAdmin):
