@@ -6,7 +6,6 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, WebAppI
 from telegram.ext import (ContextTypes, ConversationHandler)
 from django.utils import timezone
 
-
 START_ROUTES = 1
 REGISTER, LOGIN, SERVICE_ACTION_COMING, SERVICE_ACTION_LATE, SERVICE_ACTION_POSTPONE, SERVICE_ACTION_CANCEL, \
 SERVICE_ACTION_TIP, SERVICE_ACTION_BONUSES = range(8)
@@ -28,13 +27,25 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def openwebapp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     UpdateChatData(update.message.chat.username, update.message.chat.id)
-    keyboard = [
-        [InlineKeyboardButton("Перейти в приложение",
-                              web_app=WebAppInfo(url="https://vodoley.terexov.ru/#/auth"))]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(text=messages['openwebapp'], reply_markup=reply_markup)
-    return ConversationHandler.END
+    keyboard = []
+
+    userExists = GetUser(update.message.chat.username)
+    if userExists:
+        token = GetToken(userExists)
+        keyboard.append([InlineKeyboardButton("Перейти в приложение",
+                                              web_app=WebAppInfo(
+                                                  url=f"https://vodoley.terexov.ru/#/main?token={token[0]}"))])
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text(text=messages['openwebapp'], reply_markup=reply_markup)
+        return ConversationHandler.END
+    else:
+        keyboard.append([InlineKeyboardButton("Зарегистрироваться", callback_data=str(REGISTER))])
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        # Вы еще не зарегистрированы в сервисе, хотите пройти регистрацию?
+        await context.bot.send_message(chat_id=update.effective_user.id,
+                                       text=messages['user_not_found'],
+                                       reply_markup=reply_markup)
+        return START_ROUTES
 
 
 async def register(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -60,7 +71,8 @@ async def register(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return START_ROUTES
     else:
         keyboard.append([InlineKeyboardButton("Перейти в приложение",
-                                              web_app=WebAppInfo(url=f"https://vodoley.terexov.ru/#/register?username={username}"))])
+                                              web_app=WebAppInfo(
+                                                  url=f"https://vodoley.terexov.ru/#/register?username={username}"))])
         reply_markup = InlineKeyboardMarkup(keyboard)
         # Отлично! Чтобы зарегистрироваться в сервисе, воспользуйтесь приложением
         await context.bot.send_message(chat_id=update.effective_user.id,
@@ -145,7 +157,8 @@ async def signup(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             return START_ROUTES
         else:
             keyboard.append([InlineKeyboardButton("Записаться",
-                                                  web_app=WebAppInfo(url=f"https://vodoley.terexov.ru/#/makeorder?token={token[0]}"))])
+                                                  web_app=WebAppInfo(
+                                                      url=f"https://vodoley.terexov.ru/#/makeorder?token={token[0]}"))])
             reply_markup = InlineKeyboardMarkup(keyboard)
             # Записаться на мойку можно в нашем приложении
             await context.bot.send_message(chat_id=update.effective_user.id,
