@@ -8,7 +8,7 @@ from django.utils import timezone
 
 START_ROUTES = 1
 LOGIN, SERVICE_ACTION_COMING, SERVICE_ACTION_LATE, SERVICE_ACTION_POSTPONE, SERVICE_ACTION_CANCEL, \
-SERVICE_ACTION_TIP, SERVICE_ACTION_BONUSES = range(8)
+SERVICE_ACTION_TIP, SERVICE_ACTION_BONUSES = range(7)
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 messages = message_loader.get_messages()
