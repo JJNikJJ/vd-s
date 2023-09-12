@@ -1,10 +1,16 @@
 {% extends "admin/change_form.html" %}
 
-{% block object-tools-items %}
+{% block submit_buttons_bottom %}
     {{ block.super }}
+    {% if not original.status and not original.is_past_due %}
     <div class="submit-row">
+        {% if not original.started %}
+            <input type="submit" value="Начать выполнение" name="_start-service">
+        {% elif not original.status %}
             <input type="submit" value="Завершить заказ" name="_close-checkout">
+        {% endif %}
     </div>
+    {% endif %}
 {% endblock %}
 
 

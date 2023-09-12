@@ -22,8 +22,8 @@ def SendMessage(user, message):
 
 
 class UserChat(models.Model):
-    telegram = models.CharField(null=False, max_length=255, verbose_name="Никнейм тг", editable=False)
-    chat = models.CharField(null=False, max_length=255, verbose_name="Айди чата", editable=False)
+    telegram = models.CharField(null=False, max_length=255, verbose_name="Никнейм тг")
+    chat = models.CharField(null=False, max_length=255, verbose_name="Айди чата")
 
     def __str__(self):
         return f"({self.id}) {self.telegram} #{self.chat}"
@@ -93,8 +93,7 @@ class CustomUser(AbstractUser):
     car = models.ForeignKey(Car, on_delete=models.SET_NULL, null=True, verbose_name="Авто")
     telegram = models.CharField(max_length=100, null=True, verbose_name="Телеграм никнейм")
     phone_number = models.CharField(max_length=20, null=True, verbose_name="Номер телефона")
-    is_registration_complete = models.BooleanField(default=False, editable=False,
-                                                   verbose_name="Регистрация подтверждена")
+    is_registration_complete = models.BooleanField(default=False, verbose_name="Регистрация подтверждена")
 
     bot_welcome_message_sent = models.BooleanField(default=False)
     bot_registration_complete_message_sent = models.BooleanField(default=False)
@@ -172,22 +171,18 @@ class Checkout(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     target_datetime = models.DateTimeField(null=True, default=None,
                                            verbose_name="Время записи")
+    started = models.BooleanField(default=False, verbose_name="Принят к выполнению")
     status = models.BooleanField(default=False, verbose_name="Завершен")
-    canceled = models.BooleanField(default=False, verbose_name="Отменен клиентом",
-                                   # editable=False
-                                   )
-    postponed = models.BooleanField(default=False, verbose_name="Клиент опаздывает",
-                                    # editable=False
-                                    )
+    canceled = models.BooleanField(default=False, verbose_name="Отменен клиентом")
+    postponed = models.BooleanField(default=False, verbose_name="Клиент опаздывает")
+    bonuses_received = models.BooleanField(default=False,
+                                           verbose_name="Бонусы по программе лояльности были начислены")
     final_price = models.FloatField(validators=[MinValueValidator(0.0)], verbose_name="Стоимость заказа")
     user_review = models.CharField(max_length=200, null=True, blank=True, default="", verbose_name="Отзыв клиента")
     payment_type = models.ForeignKey(PaymentType, null=True, on_delete=models.SET_NULL, verbose_name="Способ оплаты")
-    bonuses_received = models.BooleanField(default=False,
-                                           verbose_name="Бонусы по пограмме лояльности были начислены",
-                                           editable=False)
 
-    def save(self, *args, **kwargs):
-        if self.status and not self.bonuses_received and not self.canceled:
+    def close(self):
+        if not self.status and not self.bonuses_received and not self.canceled:
             for service_price in self.services_list.all():
                 service = service_price.servicePrice.service
                 if service.has_loyalty:
@@ -200,8 +195,8 @@ class Checkout(models.Model):
                         loyal = ServiceUserLoyalty.objects.create(user=self.user, service=service, loyalty_count=1)
                     loyal.save()
             self.bonuses_received = True
-
-        super(Checkout, self).save(*args, **kwargs)
+        self.status = True
+        self.save()
 
     @property
     def is_past_due(self):

@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 
 from main.models import *
-from main.forms import CheckoutAdminForm
 
 admin.site.register(CarClass)
 admin.site.register(Address)
@@ -32,7 +31,7 @@ class CheckoutAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'target_datetime', 'checkout_status']
     # TODO: readonly fields
     readonly_fields = ['bonuses_received',
-                       # 'canceled', 'postponed'
+                       # 'canceled', 'postponed', 'started', 'status'
                        ]
     list_filter = ['status']
 
@@ -43,15 +42,28 @@ class CheckoutAdmin(admin.ModelAdmin):
             return "Завершен"
         elif obj.is_past_due:
             return "Просрочен"
+        elif obj.started:
+            return "Выполняется"
         else:
-            return "Активен"
+            return "Ожидает выполнения"
 
     checkout_status.short_description = "Статус"
 
     def response_change(self, request, obj):
+
         if "_close-checkout" in request.POST:
-            self.form.close_checkout_action()
-            self.message_user(request, "Заказ закрыт")
+            if not obj.status:
+                obj.close()
+                self.message_user(request, "Заказ завершен")
+                SendMessage(obj.user, "Ваш автомобиль готов! Всё понравилось? Можете оставить чаевые мойщику!")
+            return HttpResponseRedirect(".")
+
+        if "_start-service" in request.POST:
+            if not obj.started:
+                obj.started = True
+                obj.save()
+                SendMessage(obj.user, "Мойка вашего автомобиля началась!")
+                self.message_user(request, "Сообщение о начале выполнения заказа отправлено")
             return HttpResponseRedirect(".")
 
         return super().response_change(request, obj)
