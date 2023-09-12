@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.http import HttpResponseRedirect
+
 from main.models import *
 from main.forms import CheckoutAdminForm
 
@@ -43,6 +45,14 @@ class CheckoutAdmin(admin.ModelAdmin):
             return "Активен"
 
     checkout_status.short_description = "Статус"
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        if "_close_checkout" in request.POST:
+            self.form.close_checkout_action()
+            self.message_user(request, "Заказ закрыт")
+            return HttpResponseRedirect(request.path)
+
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
 
 admin.site.register(Checkout, CheckoutAdmin)
