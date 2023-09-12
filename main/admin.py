@@ -4,7 +4,6 @@ from .models import *
 admin.site.register(CarClass)
 admin.site.register(Address)
 admin.site.register(Service)
-admin.site.register(Car)
 admin.site.register(ServiceUserLoyalty)
 admin.site.register(PaymentType)
 
@@ -57,5 +56,13 @@ class PriceLinkAdminInline(admin.TabularInline):
 
 @admin.register(ServicePrice)
 class ServicePriceAdmin(admin.ModelAdmin):
-    list_display = ('service', 'address')
+    list_display = ['service', 'address']
     inlines = (PriceLinkAdminInline,)
+
+
+class CarAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'car_class']
+    list_filter = ['car_class']
+
+
+admin.site.register(Car, CarAdmin)

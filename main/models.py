@@ -29,7 +29,7 @@ class UserChat(models.Model):
     chat = models.CharField(null=False, max_length=255, verbose_name="Айди чата", editable=False)
 
     def __str__(self):
-        return f"({self.id}) @{self.telegram} #{self.chat}"
+        return f"({self.id}) {self.telegram} #{self.chat}"
 
     class Meta:
         verbose_name = "Чат"
