@@ -93,9 +93,12 @@ async def login(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     UpdateChatData(username, query.message.chat.id)
     await query.answer()
 
+    userExists = GetUser(username)
+    token = GetToken(userExists)
+
     keyboard = [
         [InlineKeyboardButton("Перейти в приложение",
-                              web_app=WebAppInfo(url=f"https://vodoley.terexov.ru/#/login?username={username}"))]
+                              web_app=WebAppInfo(url=f"https://vodoley.terexov.ru/#/main?token={token[0]}"))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     # Рады снова видеть вас в приложении
