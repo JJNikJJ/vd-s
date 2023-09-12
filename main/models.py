@@ -4,9 +4,6 @@ import requests
 from django.contrib.auth.models import AbstractUser, User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
-
 from vodoleyProjectBot.config import TOKEN
 
 
@@ -169,7 +166,7 @@ class PaymentType(models.Model):
 
 
 class Checkout(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, verbose_name="Заказчик услуг")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False, verbose_name="Заказчик услуг")
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, verbose_name="Адрес заказанных услуг")
     services_list = models.ManyToManyField(CarClassHasServicePrice, verbose_name="Заказанные услуги")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания заказа")

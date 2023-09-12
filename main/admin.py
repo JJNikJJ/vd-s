@@ -29,6 +29,8 @@ class CheckoutAdmin(admin.ModelAdmin):
     list_filter = ['status']
 
     def checkout_status(self, obj):
+        if obj.canceled:
+            return "Отменен"
         if obj.status:
             return "Завершен"
         elif obj.is_past_due:
