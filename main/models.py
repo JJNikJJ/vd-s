@@ -63,7 +63,7 @@ class Address(models.Model):
 
 class Service(models.Model):
     name = models.CharField(max_length=100, null=False, verbose_name="Название услуги")
-    is_special = models.BooleanField(default=False, verbose_name="Услуга является специальной")
+    is_special = models.BooleanField(default=False, verbose_name="Специальная")
     has_loyalty = models.BooleanField(default=False, verbose_name="Участвует в программе лояльности")
 
     def __str__(self):

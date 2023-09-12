@@ -144,7 +144,7 @@ async def signup(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                                             parse_mode=telegram.constants.ParseMode.HTML)
             return START_ROUTES
         else:
-            keyboard.append([InlineKeyboardButton("Записаться",
+            keyboard.append([InlineKeyboardButton("Перейти в приложение",
                                                   web_app=WebAppInfo(
                                                       url=f"https://vodoley.terexov.ru/#/makeorder?token={token[0]}"))])
             reply_markup = InlineKeyboardMarkup(keyboard)

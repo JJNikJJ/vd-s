@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import *
+from main.models import *
+from main.forms import CheckoutAdminForm
 
 admin.site.register(CarClass)
 admin.site.register(Address)
-admin.site.register(Service)
 admin.site.register(ServiceUserLoyalty)
 admin.site.register(PaymentType)
 
@@ -24,6 +24,7 @@ admin.site.register(CustomUser, CustomUserAdmin)
 
 
 class CheckoutAdmin(admin.ModelAdmin):
+    form = CheckoutAdminForm
     list_display = ['__str__', 'target_datetime', 'checkout_status']
     # TODO: readonly fields
     readonly_fields = ['bonuses_received',
@@ -71,3 +72,11 @@ class CarAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Car, CarAdmin)
+
+
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'is_special', 'has_loyalty']
+    list_filter = ['is_special', 'has_loyalty']
+
+
+admin.site.register(Service, ServiceAdmin)
