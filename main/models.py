@@ -166,7 +166,7 @@ class PaymentType(models.Model):
 
 
 class Checkout(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False, verbose_name="Заказчик услуг")
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, verbose_name="Заказчик услуг")
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, verbose_name="Адрес заказанных услуг")
     services_list = models.ManyToManyField(CarClassHasServicePrice, verbose_name="Заказанные услуги")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания заказа")
