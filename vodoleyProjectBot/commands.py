@@ -88,9 +88,9 @@ async def registrationView(context, update, username, message):
 
 
 async def login(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    UpdateChatData(update.message.chat.username, update.message.chat.id)
     query = update.callback_query
     username = query.message.chat.username
+    UpdateChatData(username, update.message.chat.id)
     await query.answer()
 
     keyboard = [
