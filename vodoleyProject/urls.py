@@ -17,4 +17,7 @@ urlpatterns = [
     path('api/postpone-checkout/', PostponeCheckout.as_view(), name='postpone-checkout'),
     path('api/get-user-discounts/', UserDiscountsView.as_view(), name='get-user-discounts'),
     path('api/get-payment-methods/', PaymentTypeListView.as_view(), name='get-payment-methods'),
+    path('api/edit-checkout/', EditCheckout.as_view(), name='edit-checkout'),
+    path('api/cancel-checkout/', CancelCheckout.as_view(), name='cancel-checkout'),
+
 ]

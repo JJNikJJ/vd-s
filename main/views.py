@@ -305,3 +305,40 @@ class EditUser(APIView):
         user.save()
 
         return JsonResponse({'message': 'OK'})
+
+
+class CancelCheckout(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        checkout_id = data.get('id')
+
+        try:
+            checkout = Checkout.objects.get(id=checkout_id)
+            checkout.canceled = True
+            checkout.save()
+        except DatabaseError as e:
+            return JsonResponse({'message': f'Ошибка: {str(e)}'})
+
+        return JsonResponse({'message': 'OK'})
+
+
+class EditCheckout(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        checkout_id = data.get('id')
+        address = data.get('address')
+        new_time = datetime.datetime.strptime(data.get('time'), '%Y-%m-%d %H:%M:%S')
+
+        try:
+            checkout = Checkout.objects.get(id=checkout_id)
+            checkout.address = Address.objects.get(id=address)
+            checkout.target_datetime = new_time
+            checkout.save()
+        except DatabaseError as e:
+            return JsonResponse({'message': f'Ошибка: {str(e)}'})
+
+        return JsonResponse({'message': 'OK'})
