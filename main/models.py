@@ -171,6 +171,8 @@ class Checkout(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     target_datetime = models.DateTimeField(null=True, default=None,
                                            verbose_name="Время записи")
+    takes_time = models.IntegerField(null=False, default=0,
+                                     verbose_name="Примерное время выполнения, минут")
     started = models.BooleanField(default=False, verbose_name="Принят к выполнению")
     status = models.BooleanField(default=False, verbose_name="Завершен")
     canceled = models.BooleanField(default=False, verbose_name="Отменен клиентом")
@@ -180,6 +182,7 @@ class Checkout(models.Model):
     final_price = models.FloatField(validators=[MinValueValidator(0.0)], verbose_name="Стоимость заказа")
     user_review = models.CharField(max_length=200, null=True, blank=True, default="", verbose_name="Отзыв клиента")
     payment_type = models.ForeignKey(PaymentType, null=True, on_delete=models.SET_NULL, verbose_name="Способ оплаты")
+
 
     def close(self):
         if not self.status and not self.bonuses_received and not self.canceled:

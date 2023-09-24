@@ -6,6 +6,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from background_task import background
+
 
 from .serializers import *
 from .util import get_random_string
@@ -52,7 +54,7 @@ class UserCheckoutsView(APIView):
 
     def get(self, request):
         user = request.user
-        checkouts = Checkout.objects.filter(user=user)
+        checkouts = Checkout.objects.filter(user=user, status=False, canceled=False)
         serializer = CheckoutSerializer(checkouts, many=True)
         return JsonResponse(serializer.data, safe=False)
 
@@ -155,6 +157,7 @@ class CreateCheckout(APIView):
         price_sum = 0
         approved = []
         finalServices = []
+        takes_time = 0
         for service in services:
             price = CarClassHasServicePrice.objects \
                 .filter(carClass=car_class, servicePrice=service).first()
@@ -173,6 +176,7 @@ class CreateCheckout(APIView):
             price_sum += service_price
             approved.append(service)
             finalServices.append(price)
+            takes_time += 10
 
         if len(approved) == 0:
             return JsonResponse(
@@ -186,12 +190,14 @@ class CreateCheckout(APIView):
             except PaymentType.DoesNotExist:
                 pass
 
+        target_datetime = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
         checkout = Checkout.objects.create(
             user=request.user,
             address=Address.objects.get(id=address),
-            target_datetime=datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S'),
+            target_datetime=target_datetime,
             payment_type=PaymentType.objects.get(id=payment_type),
             final_price=price_sum,
+            takes_time=takes_time
         )
 
         try:
@@ -202,10 +208,19 @@ class CreateCheckout(APIView):
             return JsonResponse(
                 {'message': f'Ошибка: {str(e)}'})
 
-        # return JsonResponse({'message': 'OK'})
+        task_started = False
+        current_time = datetime.datetime.now()
+        scheduled_time = target_datetime + timedelta(minutes=takes_time - 10)
+        time_difference = scheduled_time - current_time
+        if scheduled_time >= current_time:
+            notify_user_when_checkout_ends(checkout.id, schedule=time_difference.seconds)
+            task_started = True
+
         return JsonResponse(data={'message': 'OK',
+                                  'task started': time_difference if task_started else 'False',
                                   'approved': list(map(lambda x: x.id, approved)),
-                                  'finalServices': list(map(lambda x: x.id, finalServices))}, safe=False)
+                                  'finalServices': list(map(lambda x: x.id, finalServices))},
+                            safe=False)
 
 
 class PostponeCheckout(APIView):
@@ -342,3 +357,56 @@ class EditCheckout(APIView):
             return JsonResponse({'message': f'Ошибка: {str(e)}'})
 
         return JsonResponse({'message': 'OK'})
+
+
+class GetAddressTimings(APIView):
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        address_id = data.get('id')
+        target_date = data.get('date')
+
+        address = Address.objects.get(id=address_id)
+        checkouts = Checkout.objects.filter(address=address, target_datetime__date=target_date)
+
+        service_timings = [
+            {
+                'id': entity.id,
+                'start': entity.target_datetime.time(),
+                'takes': entity.takes_time,
+            }
+            for entity in checkouts
+        ]
+
+        data = get_time_slices(address.work_time_start, address.work_time_end, service_timings)
+
+        return JsonResponse(data, safe=False)
+
+
+def get_time_slices(start_time, end_time, service_timings):
+    time_slices = []
+    ten_minutes = timedelta(minutes=10)
+    current_time = datetime.datetime.combine(datetime.datetime.today(), start_time)
+    end_time = datetime.datetime.combine(datetime.datetime.today(), end_time)
+    exclude_slots = set()
+
+    for service in service_timings:
+        service_start = datetime.datetime.combine(datetime.datetime.today(), service['start'])
+        service_end = service_start + timedelta(minutes=service['takes'])
+        while service_start < service_end:
+            exclude_slots.add(service_start.time().strftime('%H:%M'))
+            service_start += ten_minutes
+
+    while current_time <= end_time:
+        time_str = current_time.strftime('%H:%M')
+        if time_str not in exclude_slots:
+            time_slices.append(time_str)
+        current_time += ten_minutes
+
+    return time_slices
+
+
+@background
+def notify_user_when_checkout_ends(checkout_id):
+    checkout = Checkout.objects.get(pk=checkout_id)
+    SendMessage(checkout.user, "Через 10 минут закончим мыть ваш автомобиль!")

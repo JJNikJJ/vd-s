@@ -33,6 +33,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Application definition
 
 INSTALLED_APPS = [
+    'background_task',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',

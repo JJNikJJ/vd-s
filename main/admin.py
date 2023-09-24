@@ -30,7 +30,7 @@ class CheckoutAdmin(admin.ModelAdmin):
     change_form_template = "admin/main/checkout/change_form.html"
     list_display = ['__str__', 'target_datetime', 'checkout_status']
     # TODO: readonly fields
-    readonly_fields = ['bonuses_received',
+    readonly_fields = ['bonuses_received', 'takes_time'
                        # 'canceled', 'postponed', 'started', 'status'
                        ]
     list_filter = ['status']
