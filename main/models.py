@@ -52,6 +52,10 @@ class Address(models.Model):
                                        verbose_name="Время начала работы автомойки")
     work_time_end = models.TimeField(null=False, default=datetime.time(22, 0),
                                      verbose_name="Время конца работы автомойки")
+    slots_amount = models.IntegerField(null=False, default=1, validators=[
+                                     MaxValueValidator(10),
+                                     MinValueValidator(1)
+                                 ], verbose_name="Макс. кол-во одновременных обслуживаний")
 
     def __str__(self):
         return f"({self.id}) {self.address}"

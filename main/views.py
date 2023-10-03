@@ -309,6 +309,8 @@ class EditUser(APIView):
         user.telegram = user_tg
         car = user.car
         if car:
+            if car.mark != mark or car.model != model:
+                car.car_class = None
             car.mark = mark
             car.model = model
             car.number = car_number
@@ -378,28 +380,32 @@ class GetAddressTimings(APIView):
             for entity in checkouts
         ]
 
-        data = get_time_slices(address.work_time_start, address.work_time_end, service_timings)
+        data = get_time_slices(address.slots_amount, address.work_time_start, address.work_time_end, service_timings)
 
         return JsonResponse(data, safe=False)
 
 
-def get_time_slices(start_time, end_time, service_timings):
+def get_time_slices(max_slots, start_time, end_time, service_timings):
     time_slices = []
     ten_minutes = timedelta(minutes=10)
     current_time = datetime.datetime.combine(datetime.datetime.today(), start_time)
     end_time = datetime.datetime.combine(datetime.datetime.today(), end_time)
-    exclude_slots = set()
+    exclude_slots = {}
 
     for service in service_timings:
         service_start = datetime.datetime.combine(datetime.datetime.today(), service['start'])
         service_end = service_start + timedelta(minutes=service['takes'])
         while service_start < service_end:
-            exclude_slots.add(service_start.time().strftime('%H:%M'))
+            timestr = service_start.time().strftime('%H:%M')
+            if timestr in exclude_slots:
+                exclude_slots[timestr] += 1
+            else:
+                exclude_slots[timestr] = 1
             service_start += ten_minutes
 
     while current_time <= end_time:
         time_str = current_time.strftime('%H:%M')
-        if time_str not in exclude_slots:
+        if time_str not in exclude_slots or exclude_slots[time_str] < max_slots:
             time_slices.append(time_str)
         current_time += ten_minutes
 
