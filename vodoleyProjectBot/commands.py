@@ -40,7 +40,7 @@ async def openwebapp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         token = GetToken(userExists)
         keyboard = [[InlineKeyboardButton("Перейти в приложение",
                                           web_app=WebAppInfo(
-                                              url=f"https://vodoley.terexov.ru/#/main?token={token[0]}"))]]
+                                              url=f"https://iroman8614.github.io/vodoley/#/main?token={token[0]}"))]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text(text=messages['openwebapp'], reply_markup=reply_markup)
         return ConversationHandler.END
@@ -79,7 +79,7 @@ async def openwebapp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def registrationView(context, update, username, message):
     keyboard = [[InlineKeyboardButton("Зарегистрироваться",
                                       web_app=WebAppInfo(
-                                          url=f"https://vodoley.terexov.ru/#/register?username={username}"))]]
+                                          url=f"https://iroman8614.github.io/vodoley/#/register?username={username}"))]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await context.bot.send_message(chat_id=update.effective_user.id,
                                    text=message,
@@ -98,7 +98,7 @@ async def login(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     keyboard = [
         [InlineKeyboardButton("Перейти в приложение",
-                              web_app=WebAppInfo(url=f"https://vodoley.terexov.ru/#/main?token={token[0]}"))]
+                              web_app=WebAppInfo(url=f"https://iroman8614.github.io/vodoley/#/main?token={token[0]}"))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     # Рады снова видеть вас в приложении
@@ -146,7 +146,7 @@ async def signup(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         else:
             keyboard.append([InlineKeyboardButton("Перейти в приложение",
                                                   web_app=WebAppInfo(
-                                                      url=f"https://vodoley.terexov.ru/#/makeorder?token={token[0]}"))])
+                                                      url=f"https://iroman8614.github.io/vodoley/#/makeorder?token={token[0]}"))])
             reply_markup = InlineKeyboardMarkup(keyboard)
             # Записаться на мойку можно в нашем приложении
             await context.bot.send_message(chat_id=update.effective_user.id,
